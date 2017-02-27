@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, g
 import logging
 from logging.handlers import RotatingFileHandler
 
-
+DATABASE = "/database/db.db"
 app = Flask(__name__, static_url_path="", static_folder="static")
 
 
