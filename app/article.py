@@ -10,14 +10,17 @@ class Article:
     def get_five_more_recent(self):
         db = Database()
         connection = db.get_db()
-        fiveArticle = connection.execute("select * from article where date_publication < date() order by date_publication limit 5").fetchall()
+        cursor = connection.cursor()
+        fiveArticle = cursor.execute("select * from article where date_publication < date() order by date_publication limit 5")
         return fiveArticle
 
 
-    def get_article(self, id):
+    def get_article(self, identifiant):
         db = Database()
         connection = db.get_db()
-        print connection.execute("select * from article").fetchall()
+        cursor = connection.cursor()
+
+        return cursor.execute("select * from article where identifiant="+identifiant+"").fetchall()
 
     def create_article(self, args):
         status = "Error"

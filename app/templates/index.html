@@ -4,6 +4,6 @@
     <h1>Home page</h1>
 
     {% for article in articles %}
-        <div>{{article}}</div>
+        <div><a href="/article/{{article[2]}}">{{article[1]}}</a></div>
     {% endfor %}
 {% endblock %}
