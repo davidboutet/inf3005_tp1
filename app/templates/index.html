@@ -4,6 +4,8 @@
     <h1>Home page</h1>
 
     {% for article in articles %}
-        <div><a href="/article/{{article[2]}}">{{article[1]}}</a></div>
+        <div>
+            <a href="/article/{{article[2]}}" style="margin-bottom:5px;" class="btn btn-primary">{{article[1]}} - {{article[2]}} - {{article[3]}} - {{article[4]}} - {{article[5]}}</a>
+        </div>
     {% endfor %}
 {% endblock %}

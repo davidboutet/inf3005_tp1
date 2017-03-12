@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
+    <h1>Create article</h1>
     <form action="{{action}}" method="POST">
         <input type="text" name="title" value="{{title}}" placeholder="title"/>
         <input type="text" name="identifiant" value="{{identifiant}}" placeholder="id"/>
@@ -8,6 +9,6 @@
         <input type="text" name="publication_date" value="{{date}}" placeholder="publication date"/>
         <textarea name="paragraph">{{paragraph}}</textarea>
 
-        <button type="submit" value="Submit">Save</button>
+        <button type="submit" value="Submit" class="btn btn-success">Save</button>
     </form>
 {% endblock %}

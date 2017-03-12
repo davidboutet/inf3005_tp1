@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Edit {{article[1]}}</h1>
+    <form action="{{action}}" method="POST">
+        <input type="text" name="title" value="{{article[1]}}" placeholder="title"/>
+        <input type="text" name="identifiant" value="{{article[2]}}" placeholder="id" readonly/>
+        <input type="text" name="author" value="{{article[3]}}" placeholder="author" readonly/>
+        <input type="text" name="publication_date" value="{{article[4]}}" placeholder="publication date" readonly/>
+        <textarea name="paragraph">{{article[5]}}</textarea>
+
+        <button type="submit" value="Submit" class="btn btn-success">Save</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>title</th>
+            <th>id</th>
+            <th>author</th>
+            <th>publication date</th>
+            <th>paragraphe</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>{{article[1]}}</th>
+            <td>{{article[2]}}</td>
+            <td>{{article[3]}}</td>
+            <td>{{article[4]}}</td>
+            <td>{{article[5]}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
