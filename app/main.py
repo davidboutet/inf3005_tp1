@@ -1,8 +1,6 @@
 from flask import Flask, request, render_template, redirect, g, flash
-import sqlite3
 import logging
 from logging.handlers import RotatingFileHandler
-from database import Database
 from article import Article
 
 app = Flask(__name__, static_url_path="", static_folder="static")
@@ -50,7 +48,13 @@ def edit_article(identifiant):
             return render_template("404.html"), 404
         return render_template("article/edit_article.html", article=article)
     else:
-        article.update(identifiant, request.form)
+        status = article.update(identifiant, request.form)
+        if (status == "success"):
+            message = {"status": "success", "message": "Article updated"}
+            flash(message)
+        else:
+            message = {"status": "danger", "message": "An error occured"}
+            flash(message)
         article = article.get_article(identifiant)
         return render_template("article/edit_article.html", article=article)
 
@@ -71,15 +75,18 @@ def new_admin():
         article = Article()
         status = article.create_article(request.form)
         if(status == "success"):
-            flash("success")
+            message = {"status": "success", "message": "Article created"}
+            flash(message)
         else:
-            flash("danger")
+            message = {"status": "danger", "message": "An error occured"}
+            flash(message)
         return render_template("article/article_form.html")
 
 
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
 
 @app.errorhandler(500)
 def page_not_found(e):

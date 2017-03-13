@@ -3,7 +3,7 @@
 {% block content %}
     <h1>Create article</h1>
     <form action="{{action}}" method="POST">
-        <input type="text" name="title" value="{{title}}" placeholder="title"/>
+        <input type="text" name="title" value="{{title}}" placeholder="title" autofocus/>
         <input type="text" name="identifiant" value="{{identifiant}}" placeholder="id"/>
         <input type="text" name="author" value="{{author}}" placeholder="author"/>
         <input type="text" name="publication_date" value="{{date}}" placeholder="publication date"/>

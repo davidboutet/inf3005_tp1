@@ -30,8 +30,8 @@ class Article:
         db = Database()
         connection = db.get_db()
         cursor = connection.cursor()
-        row = cursor.execute("select * from article "
-                             "where identifiant='"+identifiant+"'").fetchone()
+        query = "select * from article where identifiant=?"
+        row = cursor.execute(query, (identifiant,)).fetchone()
         return row
 
     def create_article(self, args):
@@ -52,6 +52,7 @@ class Article:
         return status
 
     def update(self, identifiant, args):
+        status = "error"
         if (args["title"] != "" and args["paragraph"] != ""):
                 db = Database()
                 connection = db.get_db()
@@ -63,7 +64,8 @@ class Article:
                 data = (args["title"], args["paragraph"], identifiant)
                 cursor.execute(query, data)
                 connection.commit()
-        return 'success'
+                status = "success"
+        return status
 
     def search(self, query_string):
         if(query_string):
