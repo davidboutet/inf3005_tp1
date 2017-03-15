@@ -16,8 +16,6 @@ def close_connection(exception):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    # logging
-    # app.logger.info('Info')
     articles = Article()
     if request.method == "POST" and request.form["search_string"]:
         query_string = request.form["search_string"]
@@ -70,26 +68,30 @@ def admin():
 def new_admin():
     if request.method == "GET":
         return render_template("article/article_form.html",
-                               action="/admin-nouveau")
+                               action="/admin-nouveau", article="")
     else:
         article = Article()
-        status = article.create_article(request.form)
-        if(status == "success"):
+        obj = article.create_article(request.form)
+        if(obj["status"] == "success"):
             message = {"status": "success", "message": "Article created"}
             flash(message)
         else:
-            message = {"status": "danger", "message": "An error occured"}
+            message = {"status": "danger",
+                       "message": "All input are required."}
             flash(message)
-        return render_template("article/article_form.html")
+
+        return render_template("article/article_form.html", article=obj["obj"])
 
 
 @app.errorhandler(404)
 def page_not_found(e):
+    app.logger.info(e)
     return render_template('404.html'), 404
 
 
 @app.errorhandler(500)
 def page_not_found(e):
+    app.logger.info(e)
     return render_template('500.html'), 500
 
 if __name__ == "__main__":

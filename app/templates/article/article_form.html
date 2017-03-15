@@ -3,11 +3,11 @@
 {% block content %}
     <h1>Create article</h1>
     <form action="{{action}}" method="POST">
-        <input type="text" name="title" value="{{title}}" placeholder="title" autofocus/>
-        <input type="text" name="identifiant" value="{{identifiant}}" placeholder="id"/>
-        <input type="text" name="author" value="{{author}}" placeholder="author"/>
-        <input type="text" name="publication_date" value="{{date}}" placeholder="publication date"/>
-        <textarea name="paragraph">{{paragraph}}</textarea>
+        <input type="text" name="title" value="{{article[1]}}" placeholder="title" autofocus required/>
+        <input type="text" name="identifiant" value="{{article[2]}}" placeholder="id" required/>
+        <input type="text" name="author" value="{{article[3]}}" placeholder="author" required/>
+        <input type="date" name="publication_date" value="{{article[4]}}" placeholder="publication date" required/>
+        <textarea name="paragraph" required>{{article[5]}}</textarea>
 
         <button type="submit" value="Submit" class="btn btn-success">Save</button>
     </form>

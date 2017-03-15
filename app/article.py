@@ -35,7 +35,7 @@ class Article:
         return row
 
     def create_article(self, args):
-        status = "error"
+        return_value = {"status": "error", "obj": {}}
         if (args["title"] != "" and args["identifiant"] != "" and
             args["author"] != "" and args["publication_date"] != "" and
             args["paragraph"] != ""):
@@ -48,8 +48,13 @@ class Article:
                         args["paragraph"])
                 cursor.execute(query, data)
                 connection.commit()
-                status = "success"
-        return status
+                return_value["status"] = "success"
+        else:
+            return_value["obj"] = (id(self), args["title"],
+                                   args["identifiant"],
+                                   args["author"], args["publication_date"],
+                                   args["paragraph"])
+        return return_value
 
     def update(self, identifiant, args):
         status = "error"
