@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    {% if username %}
+        <p>You are connected as {{ username }}.</p>
+        <p><a href="/logout">Logout</a></p>
+        <br>
+    {% else %}
+        <h1>Login</h1>
+        <br>
+        <form action="/login" method="POST">
+            <label for="champ_username">Username</label>&nbsp;<input type="text" id="champ_username" name="username" maxlength="20" autofocus>
+            <br>
+            <br>
+            <label for="champ_password">Password</label>&nbsp;<input type="password" id="champ_password" name="password" maxlength="40">
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+    {% endif %}
+{% endblock %}

@@ -8,4 +8,12 @@
             <a href="/article/{{article[2]}}" style="margin-bottom:5px;" class="btn btn-primary">{{article[1]}} - {{article[2]}} - {{article[3]}} - {{article[4]}} - {{article[5]}}</a>
         </div>
     {% endfor %}
+    <a href="/" class="btn btn-primary">home</a>
+    <a href="/admin-nouveau" class="btn btn-success">create article</a>
+    <a href="/admin" class="btn btn-warning">admin</a>
+    <br>
+    <br>
+    <form method="POST" action="/">
+        <input type="text" name="search_string" placeholder="search">
+    </form>
 {% endblock %}

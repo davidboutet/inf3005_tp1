@@ -10,25 +10,22 @@ class Article:
     #     self.paragraph = paragraph
 
     def get_five_more_recent(self):
-        db = Database()
-        connection = db.get_db()
+        connection = Database().get_db()
         cursor = connection.cursor()
-        fiveArticle = cursor.execute("select * from article "
-                                     "where date_publication < date() "
-                                     "order by date_publication "
-                                     "limit 5")
-        return fiveArticle
+        five_article = cursor.execute("select * from article "
+                                      "where date_publication < date() "
+                                      "order by date_publication "
+                                      "limit 5")
+        return five_article
 
     def get_all_articles(self):
-        db = Database()
-        connection = db.get_db()
+        connection = Database().get_db()
         cursor = connection.cursor()
-        allArticles = cursor.execute("select * from article")
-        return allArticles
+        all_articles = cursor.execute("select * from article")
+        return all_articles
 
     def get_article(self, identifiant):
-        db = Database()
-        connection = db.get_db()
+        connection = Database().get_db()
         cursor = connection.cursor()
         query = "select * from article where identifiant=?"
         row = cursor.execute(query, (identifiant,)).fetchone()
@@ -37,18 +34,19 @@ class Article:
     def create_article(self, args):
         return_value = {"status": "error", "obj": {}}
         if (args["title"] != "" and args["identifiant"] != "" and
-            args["author"] != "" and args["publication_date"] != "" and
-            args["paragraph"] != ""):
-                db = Database()
-                connection = db.get_db()
-                cursor = connection.cursor()
-                query = "insert into article values (?, ?, ?, ?, ?, ?)"
-                data = (id(self), args["title"], args["identifiant"],
-                        args["author"], args["publication_date"],
-                        args["paragraph"])
-                cursor.execute(query, data)
-                connection.commit()
-                return_value["status"] = "success"
+           args["author"] != "" and args["publication_date"] != "" and
+           args["paragraph"] != "" and
+           self.get_article(args["identifiant"]) is None):
+            # end of condition
+            connection = Database().get_db()
+            cursor = connection.cursor()
+            query = "insert into article values (?, ?, ?, ?, ?, ?)"
+            data = (id(self), args["title"], args["identifiant"],
+                    args["author"], args["publication_date"],
+                    args["paragraph"])
+            cursor.execute(query, data)
+            connection.commit()
+            return_value["status"] = "success"
         else:
             return_value["obj"] = (id(self), args["title"],
                                    args["identifiant"],
@@ -58,9 +56,8 @@ class Article:
 
     def update(self, identifiant, args):
         status = "error"
-        if (args["title"] != "" and args["paragraph"] != ""):
-                db = Database()
-                connection = db.get_db()
+        if args["title"] != "" and args["paragraph"] != "":
+                connection = Database().get_db()
                 cursor = connection.cursor()
                 query = "update article " \
                         "set titre = ?, " \
@@ -73,9 +70,8 @@ class Article:
         return status
 
     def search(self, query_string):
-        if(query_string):
-            db = Database()
-            connection = db.get_db()
+        if query_string:
+            connection = Database().get_db()
             cursor = connection.cursor()
             query = "select * from article " \
                     "where (titre like ? " \

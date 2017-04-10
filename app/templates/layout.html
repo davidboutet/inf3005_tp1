@@ -17,17 +17,8 @@
                 {% endfor %}
               {% endif %}
             {% endwith %}
-            {% block content %}{% endblock %}
 
-            <br>
-            <a href="/" class="btn btn-primary">home</a>
-            <a href="/admin-nouveau" class="btn btn-success">create article</a>
-            <a href="/admin" class="btn btn-warning">admin</a>
-            <br>
-            <br>
-            <form method="POST" action="/">
-                <input type="text" name="search_string" placeholder="search">
-            </form>
+            {% block content %}{% endblock %}
         </div>
     </body>
 </html>
