@@ -1,0 +1,100 @@
+ARTICLE API
+
+URL:
+	/api/article/create
+
+Method:
+    POST
+
+Data Params:
+{
+	"title": « A « title,
+	"identifiant": "An identifier »,
+	"author": "An author",
+	"publication_date": " A date (format: YYYY-MM-DD)",
+	"paragraph": "A paragraph"
+}
+
+Success Response:
+
+Code: 201 
+Content:
+{
+    "obj": {},
+    "status": "success"
+}
+
+Error Response:
+Code: 400
+
+Content: 
+{
+    "obj": [
+      4412165008,
+      "un titre",
+      "un_titre_1492454349",
+      "david boutet",
+      "2017-05-04",
+      "paragraphe"
+    ],
+    "status": "error"
+}
+
+******************************************************************
+
+URL:
+	/api/article/list
+
+Method:
+    GET
+
+Success Response:
+
+Code: 200 
+Content:
+[
+  {
+    "author": "adsd", 
+    "title": "asdf", 
+    "url": "/article/net%20id"
+  },
+  {
+    "author": "david", 
+    "title": "bla test", 
+    "url": "/article/bla_test_1492453084264"
+  }
+]
+
+******************************************************************
+
+URL:
+	/api/article/<id>
+
+Method:
+    GET
+
+Url Params:
+    Required:
+        Identifiant
+    
+
+Success Response:
+
+Code: 200
+Content:
+{
+    "_id": 4330016280,
+    "author": "david",
+    "date": "2017-05-02",
+    "displayId": "bla_test_1492453084264",
+    "paragraph": "asdf",
+    "title": "bla test"
+}
+
+Error Response:
+Code: 400
+
+Content: 
+{
+    "error": "DisplayId not found"
+}
