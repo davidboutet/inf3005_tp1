@@ -4,6 +4,7 @@ import hashlib
 import uuid
 import logging
 import smtplib
+import urllib
 from database import Database
 from logging.handlers import RotatingFileHandler
 from article import Article
@@ -21,7 +22,7 @@ def is_authenticated(session):
 
 
 def send_unauthorized():
-    return redirect("/login")
+    return render_template('/errors/401.html'), 401
 
 
 def authentication_required(f):
@@ -38,6 +39,34 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
+
+
+# get login user
+def get_user():
+    username = None
+    if "id" in session:
+        username = Database().get_session(session["id"])
+    return username
+
+
+# send email
+def send_email(email, subject="No subject", html=""):
+    source_address = app.config["EMAIL"]
+    destination_address = email
+
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['From'] = source_address
+    msg['To'] = destination_address
+
+    msg.attach(MIMEText(html, 'html'))
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(source_address, app.config["PASSWORD"])
+    text = msg.as_string()
+    server.sendmail(source_address, destination_address, text)
+    server.quit()
 
 
 @app.route("/subscribe", methods=["GET", "POST"])
@@ -63,9 +92,7 @@ def subscribe():
 
 @app.route('/login', methods=["GET", "POST"])
 def log_user():
-    username = None
-    if "id" in session:
-        username = Database().get_session(session["id"])
+    username = get_user()
     if request.method == "GET":
         return render_template("login.html", username=username)
     else:
@@ -94,10 +121,9 @@ def log_user():
 @app.route('/logout')
 @authentication_required
 def logout():
-    if "id" in session:
-        id_session = session["id"]
+    if get_user():
         session.pop('id', None)
-        Database().delete_session(id_session)
+        Database().delete_session(get_user())
     return redirect("/")
 
 
@@ -108,19 +134,20 @@ def index():
         query_string = request.form["search_string"]
         articles = articles.search(query_string)
         return render_template("index.html",
-                               articles=articles)
+                               articles=articles, username=get_user())
     else:
         articles = articles.get_five_more_recent()
         return render_template("index.html",
-                               articles=articles)
+                               articles=articles, username=get_user())
 
 
 @app.route("/article/<identifiant>", methods=["GET"])
 def show_article(identifiant):
     article = Article().get_article(identifiant)
     if(article is None):
-        return render_template("404.html"), 404
-    return render_template("article/single_article.html", article=article)
+        return render_template("/errors/404.html"), 404
+    return render_template("article/view_article.html", article=article,
+                           username=get_user())
 
 
 @app.route("/edit/<identifiant>", methods=["GET", "POST"])
@@ -130,8 +157,9 @@ def edit_article(identifiant):
     if request.method == "GET":
         article = article.get_article(identifiant)
         if (article is None):
-            return render_template("404.html"), 404
-        return render_template("article/edit_article.html", article=article)
+            return render_template("/errors/404.html"), 404
+        return render_template("article/edit_article.html", article=article,
+                               username=get_user())
     else:
         status = article.update(identifiant, request.form)
         if (status == "success"):
@@ -141,22 +169,25 @@ def edit_article(identifiant):
             message = {"status": "danger", "message": "An error occured"}
             flash(message)
         article = article.get_article(identifiant)
-        return render_template("article/edit_article.html", article=article)
+        return render_template("article/edit_article.html", article=article,
+                               username=get_user())
 
 
 @app.route("/admin", methods=["GET"])
 @authentication_required
 def admin():
     all_articles = Article().get_all_articles()
-    return render_template("article/all_articles.html", articles=all_articles)
+    return render_template("article/list_article.html", articles=all_articles,
+                           username=get_user())
 
 
 @app.route("/admin-nouveau", methods=["GET", "POST"])
 @authentication_required
 def new_admin():
     if request.method == "GET":
-        return render_template("article/article_form.html",
-                               action="/admin-nouveau", article="")
+        return render_template("article/create_article.html",
+                               action="/admin-nouveau", article="",
+                               username=get_user())
     else:
         obj = Article().create_article(request.form)
         if(obj["status"] == "success"):
@@ -168,9 +199,11 @@ def new_admin():
                                   "and id must be unique."}
             flash(message)
 
-        return render_template("article/article_form.html", article=obj["obj"])
+        return render_template("article/create_article.html", article=obj["obj"],
+                               username=get_user())
 
 
+# check unicity of article id
 @app.route("/checkId", methods=["POST"])
 def check_id():
     data = request.get_json()
@@ -182,37 +215,46 @@ def check_id():
     return jsonify({"idExist": id_exist})
 
 
-def send_email(email, subject="No subject", html=""):
-    source_address = app.config["EMAIL"]
-    destination_address = email
-
-    msg = MIMEMultipart()
-    msg['Subject'] = subject
-    msg['From'] = source_address
-    msg['To'] = destination_address
-
-    msg.attach(MIMEText(html, 'html'))
-
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(source_address, app.config["PASSWORD"])
-    text = msg.as_string()
-    server.sendmail(source_address, destination_address, text)
-    server.quit()
+# api route
+@app.route("/api/article/create", methods=["POST"])
+def create_article():
+    data = request.get_json()
+    response = Article().create_article(data)
+    status_code = 400
+    if response["status"] == "success":
+        status_code = 201
+    return jsonify(response), status_code
 
 
+@app.route("/api/article/list", methods=["GET"])
+def list_article():
+    listarticle = Article().get_all_articles()
+    data = [{"title": each[1], "author": each[3], "url": "/article/"+urllib.quote(each[2], safe="")} for each in listarticle]
+    return jsonify(data)
+
+
+@app.route("/api/article/<identifiant>", methods=["GET"])
+def get_article(identifiant):
+    article = Article().get_article(identifiant)
+    status_code = 400
+    data = {"error": "DisplayId not found"}
+    if article is not None:
+        status_code = 200
+        data = {"_id": article[0], "displayId": article[2], "title": article[1],
+                "author": article[3], "date": article[4], "paragraph": article[5]}
+    return jsonify(data), status_code
 
 
 @app.errorhandler(404)
 def page_not_found(e):
     app.logger.info(e)
-    return render_template('404.html'), 404
+    return render_template('/errors/404.html'), 404
 
 
 @app.errorhandler(500)
 def page_not_found(e):
     app.logger.info(e)
-    return render_template('500.html'), 500
+    return render_template('/errors/500.html'), 500
 
 if __name__ == "__main__":
     handler = RotatingFileHandler('log_info.log',

@@ -1,14 +1,8 @@
 from database import Database
+import re
 
 
 class Article:
-    # def __init__(self, title, identifiant, author, date, paragraph):
-    #     self.title = title
-    #     self.identifiant = id(self)
-    #     self.author = author
-    #     self.date = date
-    #     self.paragraph = paragraph
-
     def get_five_more_recent(self):
         connection = Database().get_db()
         cursor = connection.cursor()
@@ -33,15 +27,18 @@ class Article:
 
     def create_article(self, args):
         return_value = {"status": "error", "obj": {}}
+        identifiant = re.sub('[^\w\-_\. ]', '-', args["identifiant"])
+        identifiant = identifiant.lower()
         if (args["title"] != "" and args["identifiant"] != "" and
            args["author"] != "" and args["publication_date"] != "" and
            args["paragraph"] != "" and
-           self.get_article(args["identifiant"]) is None):
+           self.get_article(identifiant) is None):
             # end of condition
             connection = Database().get_db()
             cursor = connection.cursor()
             query = "insert into article values (?, ?, ?, ?, ?, ?)"
-            data = (id(self), args["title"], args["identifiant"],
+
+            data = (id(self), args["title"], identifiant,
                     args["author"], args["publication_date"],
                     args["paragraph"])
             cursor.execute(query, data)

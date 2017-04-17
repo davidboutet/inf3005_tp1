@@ -4,11 +4,11 @@ $(document).ready(function(){
 
 
 function createId(that){
-    var currentTitle = $(that).val().replace(/[^\w\s]/gi, '_');
-    currentTitle = currentTitle.replace(/\s/g, "_");
+    var currentTitle = $(that).val().replace(/[^\w\s]/gi, '-');
+    currentTitle = currentTitle.replace(/\s/g, "-");
     currentTitle = currentTitle.toLowerCase();
     if(currentTitle){
-        currentTitle = currentTitle + "_" + new Date().getTime();
+        currentTitle = currentTitle + "-" + new Date().getTime();
     }
 
     $("#identifiant").val(currentTitle);

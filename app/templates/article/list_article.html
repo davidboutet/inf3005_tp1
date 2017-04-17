@@ -5,4 +5,8 @@
     {% for article in articles %}
         <div><a href="/edit/{{article[2]}}">{{article[1]}} ({{article[4]}})</a></div>
     {% endfor %}
+
+    <br>
+    <a href="/" class="btn btn-primary">home</a>
+    <a href="/admin-nouveau" class="btn btn-success">create article</a>
 {% endblock %}
