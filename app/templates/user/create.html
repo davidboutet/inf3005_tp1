@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Create user</h1>
+    <form action="/create/user/{{token}}" method="POST">
+        <input type="text" name="username" value="" placeholder="username" autofocus required/>
+        <input type="password" name="password" value="" placeholder="password" autofocus required/>
+
+        <button type="submit" value="Submit" class="btn btn-success">create</button>
+    </form>
+{% endblock %}

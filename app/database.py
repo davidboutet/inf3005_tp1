@@ -23,6 +23,27 @@ class Database:
                             hashed_password, False, token))
         connection.commit()
 
+    def get_user_by_token(self, token):
+        connection = self.get_db()
+        cursor = connection.cursor()
+        cursor.execute(("select * from users where token=?"),
+                       (token,))
+        user = cursor.fetchone()
+        return user
+
+    def update_user(self, token, username, salt, hashed_password):
+        connection = self.get_db()
+        connection.execute(("update users set utilisateur=?, salt=?, "
+                            "hash=?, validated=? where token=?"),
+                           (username, salt, hashed_password, True, token))
+        connection.commit()
+
+    def check_username(self, username):
+        cursor = self.get_db().cursor()
+        cursor.execute(("select * from users where utilisateur=?"),
+                       (username,))
+        return cursor.fetchone()
+
     def get_user_login_info(self, username):
         cursor = self.get_db().cursor()
         cursor.execute(("select salt, hash from users where utilisateur=?"),

@@ -22,3 +22,7 @@ create table sessions (
   id_session varchar(32),
   utilisateur varchar(25)
 );
+
+
+INSERT INTO users (id, utilisateur, email, salt, hash, validated, token)
+VALUES ('10000', 'correcteur', 'correcteur@correcteur.com', '91569610822d41149431c9abb41662f7', '8ff047dd86f67e85616dc491bf4d171dbd1294ff81073150bc5d8ce9e4170c43d091f539bd2b37d0331d2ee8715a85592ef7502e8150f7991427093d8b21480b', 'true', '188966850992407b88d1324ae7dcb91f');

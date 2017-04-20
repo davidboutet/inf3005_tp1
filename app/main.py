@@ -5,6 +5,7 @@ import uuid
 import logging
 import smtplib
 import urllib
+import re
 from database import Database
 from logging.handlers import RotatingFileHandler
 from article import Article
@@ -69,27 +70,6 @@ def send_email(email, subject="No subject", html=""):
     server.quit()
 
 
-@app.route("/subscribe", methods=["GET", "POST"])
-def subscribe():
-    if request.method == "GET":
-        return render_template("subscribe.html")
-    else:
-        username = request.form["username"]
-        password = request.form["password"]
-        email = request.form["email"]
-        if username == "" or password == "" or email == "":
-            message = {"status": "danger",
-                       "message": "All fields are required."}
-            flash(message)
-            return render_template("subscribe.html")
-
-        salt = uuid.uuid4().hex
-        hashed_password = hashlib.sha512(password + salt).hexdigest()
-        token = uuid.uuid4().hex
-        Database().create_user(username, email, salt, hashed_password, token)
-        return redirect("/")
-
-
 @app.route('/login', methods=["GET", "POST"])
 def log_user():
     username = get_user()
@@ -100,11 +80,11 @@ def log_user():
         password = request.form["password"]
         # Verifier que les champs ne sont pas vides
         if username == "" or password == "":
-            return redirect("/")
+            return redirect("/login")
 
         user = Database().get_user_login_info(username)
         if user is None:
-            return redirect("/")
+            return redirect("/login")
 
         salt = user[0]
         hashed_password = hashlib.sha512(password + salt).hexdigest()
@@ -115,7 +95,7 @@ def log_user():
             session["id"] = id_session
             return redirect("/")
         else:
-            return redirect("/")
+            return redirect("/login")
 
 
 @app.route('/logout')
@@ -181,12 +161,12 @@ def admin():
                            username=get_user())
 
 
-@app.route("/admin-nouveau", methods=["GET", "POST"])
+@app.route("/article/create", methods=["GET", "POST"])
 @authentication_required
 def new_admin():
     if request.method == "GET":
         return render_template("article/create_article.html",
-                               action="/admin-nouveau", article="",
+                               action="/article/create", article="",
                                username=get_user())
     else:
         obj = Article().create_article(request.form)
@@ -199,8 +179,69 @@ def new_admin():
                                   "and id must be unique."}
             flash(message)
 
-        return render_template("article/create_article.html", article=obj["obj"],
+        return render_template("article/create_article.html",
+                               article=obj["obj"],
                                username=get_user())
+
+
+@app.route("/invite", methods=["GET", "POST"])
+@authentication_required
+def invite_guest():
+    if request.method == "GET":
+        return render_template("admin/invite.html", username=get_user())
+    else:
+        email = request.form["email"]
+
+        email_regex = re.compile(r"[^@]+@[^@]+\.[^@]+")
+        if not email_regex.match(email) or email == "":
+            message = {"status": "danger",
+                       "message": "Email is required an "
+                       "must be in the right format"}
+            flash(message)
+            return redirect("invite")
+
+        token = uuid.uuid4().hex
+        Database().create_user(None, email, None, None, token)
+        # html = render_template(
+        #     'email/activate.html',
+        #     confirm_url="http://localhost:5000/create/user/" + token)
+        # send_email(email, "Invitation request", html)
+        # message = {"status": "success", "message": "Email sended to: "+email}
+        # flash(message)
+        return redirect("/")
+
+
+@app.route("/create/user/<token>", methods=["GET", "POST"])
+def create_user(token):
+    if request.method == "GET":
+        user = Database().get_user_by_token(token)
+        if user:
+            return render_template("user/create.html", token=token)
+        else:
+            message = {"status": "danger",
+                       "message": "A valid token is required"}
+            flash(message)
+            return redirect("/")
+    else:
+        username = request.form["username"]
+        password = request.form["password"]
+        if username == "" or password == "":
+            message = {"status": "danger",
+                       "message": "All fields are required."}
+            flash(message)
+            return redirect("/create/user/"+token)
+
+        username_exist = Database().check_username(username)
+        if username_exist is None:
+            salt = uuid.uuid4().hex
+            hashed_password = hashlib.sha512(password + salt).hexdigest()
+            Database().update_user(token, username, salt, hashed_password)
+        else:
+            message = {"status": "danger", "message": "Username already used."}
+            flash(message)
+            return redirect("/create/user/" + token)
+
+        return redirect("/")
 
 
 # check unicity of article id
@@ -229,7 +270,8 @@ def create_article():
 @app.route("/api/article/list", methods=["GET"])
 def list_article():
     listarticle = Article().get_all_articles()
-    data = [{"title": each[1], "author": each[3], "url": "/article/"+urllib.quote(each[2], safe="")} for each in listarticle]
+    data = [{"title": each[1], "author": each[3],
+             "url": "/article/"+urllib.quote(each[2], safe="")} for each in listarticle]
     return jsonify(data)
 
 
@@ -240,8 +282,9 @@ def get_article(identifiant):
     data = {"error": "DisplayId not found"}
     if article is not None:
         status_code = 200
-        data = {"_id": article[0], "displayId": article[2], "title": article[1],
-                "author": article[3], "date": article[4], "paragraph": article[5]}
+        data = {"_id": article[0], "displayId": article[2],
+                "title": article[1], "author": article[3],
+                "date": article[4], "paragraph": article[5]}
     return jsonify(data), status_code
 
 

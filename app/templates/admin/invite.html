@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div>
+    <h1>Invite someone</h1>
+    <form action="/invite" method="POST">
+        <input type="text" name="email" value="" placeholder="email" autofocus/>
+        <button type="submit" value="Submit" class="btn btn-success">send</button>
+    </form>
+
+    <br>
+    <a href="/" class="btn btn-primary">home</a>
+    <a href="/article/create" class="btn btn-success">create article</a>
+    <a href="/admin" class="btn btn-warning">admin</a>
+    <br>
+</div>
+{% endblock %}
