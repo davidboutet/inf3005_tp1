@@ -7,5 +7,7 @@ Création base de donné à partir du script sql
 cd /app/database
 sqlite3 db.db < db.sql 
 
+Fichier de configuration: /app/config.cfg
+
 Documentation API: /app/doc_api.txt
 
