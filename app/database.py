@@ -31,6 +31,14 @@ class Database:
         user = cursor.fetchone()
         return user
 
+    def get_user_by_email(self, email):
+        connection = self.get_db()
+        cursor = connection.cursor()
+        cursor.execute(("select * from users where email=?"),
+                       (email,))
+        user = cursor.fetchone()
+        return user
+
     def update_user(self, token, username, salt, hashed_password):
         connection = self.get_db()
         connection.execute(("update users set utilisateur=?, salt=?, "

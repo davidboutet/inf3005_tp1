@@ -84,6 +84,9 @@ def log_user():
 
         user = Database().get_user_login_info(username)
         if user is None:
+            message = {"status": "danger", "message": "Username or"
+                                                      " password incorrect"}
+            flash(message)
             return redirect("/login")
 
         salt = user[0]
@@ -202,12 +205,12 @@ def invite_guest():
 
         token = uuid.uuid4().hex
         Database().create_user(None, email, None, None, token)
-        # html = render_template(
-        #     'email/activate.html',
-        #     confirm_url="http://localhost:5000/create/user/" + token)
-        # send_email(email, "Invitation request", html)
-        # message = {"status": "success", "message": "Email sended to: "+email}
-        # flash(message)
+        html = render_template(
+            'email/activate.html',
+            confirm_url="http://localhost:5000/create/user/" + token)
+        send_email(email, "Invitation request", html)
+        message = {"status": "success", "message": "Email sended to: "+email}
+        flash(message)
         return redirect("/")
 
 
@@ -242,6 +245,67 @@ def create_user(token):
             return redirect("/create/user/" + token)
 
         return redirect("/")
+
+
+@app.route("/forgot", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "GET":
+        return render_template("recovery_password/forgot.html")
+    else:
+        email = request.form["email"]
+        if email is not None:
+            user = Database().get_user_by_email(email)
+            if user is not None:
+                token = user[6]
+
+                html = render_template(
+                    'email/recover.html',
+                    confirm_url="http://localhost:5000/recover/" + token)
+                send_email(email, "Recover password", html)
+                message = {"status": "success",
+                           "message": "Recover email sended to: " + email}
+                flash(message)
+            else:
+                message = {"status": "danger", "message": "No user associated"
+                                                          " to this email:" +
+                                                          email}
+                flash(message)
+                return redirect("/forgot")
+
+
+@app.route("/recover/<token>", methods=["GET", "POST"])
+def recover_password(token):
+    if request.method == "GET":
+        if Database().get_user_by_token(token) is not None:
+            user = Database().get_user_by_token(token)
+            return render_template("recovery_password/recover.html",
+                                   email=user[2], token=token)
+        else:
+            message = {"status": "danger", "message": "Not a valid token"}
+            flash(message)
+            return redirect("/")
+    else:
+        if Database().get_user_by_token(token) is not None:
+            password = request.form["password"]
+            if password is not None:
+                user = Database().get_user_by_token(token)
+                username = user[1]
+                salt = uuid.uuid4().hex
+                hashed_password = hashlib.sha512(password + salt).hexdigest()
+                Database().update_user(token, username, salt, hashed_password)
+                message = {"status": "success", "message":
+                           "Password have been reset"}
+                flash(message)
+                return redirect("/")
+            else:
+                message = {"status": "danger",
+                           "message": "All fields are required."}
+                flash(message)
+                return redirect("/recover/" + token)
+        else:
+            message = {"status": "danger", "message": "Not a valid token"}
+            flash(message)
+            return redirect("/")
 
 
 # check unicity of article id

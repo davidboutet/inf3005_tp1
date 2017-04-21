@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <h1>Recover password</h1>
+    <form action="/recover/{{token}}" method="POST">
+        <input type="email" name="email" value="{{email}}" placeholder="email" readonly disabled style="width:300px;" />
+        <br>
+        <br>
+        <input type="password" name="password" value="" placeholder="new password" autofocus style="width:300px;" />
+        <br>
+        <br>
+        <button type="submit" value="Submit" class="btn btn-success">Recover</button>
+    </form>
+{% endblock %}
